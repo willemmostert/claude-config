@@ -1,3 +1,16 @@
 {
-  "enableWorkflows": true
+  "enableWorkflows": true,
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /c/Users/info/.claude && git add -A && git diff --cached --quiet || git commit -m \"auto-sync: $(date '+%Y-%m-%d %H:%M')\" && git push"
+          }
+        ]
+      }
+    ]
+  }
 }
