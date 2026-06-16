@@ -1,0 +1,18 @@
+# Credentials and secrets
+.credentials.json
+
+# Machine-specific / ephemeral
+.last-cleanup
+mcp-needs-auth-cache.json
+backups/
+file-history/
+shell-snapshots/
+sessions/
+ide/
+session-env/
+
+# Session transcripts (large, machine-specific)
+projects/**/*.jsonl
+
+# Temp
+*.tmp
