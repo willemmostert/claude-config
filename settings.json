@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd /c/Users/info/.claude && git add -A && git diff --cached --quiet || git commit -m \"auto-sync: $(date '+%Y-%m-%d %H:%M')\" && git push"
+            "command": "cd /c/Users/info/.claude && git add -A && git diff --cached --quiet || git commit -m \"auto-sync: $(date '+%Y-%m-%d %H:%M')\" && git push; cd '/g/My Drive/Business/GotWurk Pty Ltd/GotWurk EA' && git add -A && git diff --cached --quiet || git commit -m \"auto-sync: $(date '+%Y-%m-%d %H:%M')\" && git push"
           }
         ]
       }
