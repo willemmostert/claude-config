@@ -1,0 +1,2 @@
+- [Sync Wurk trigger](feedback_sync_wurk_trigger.md) — "Sync Wurk" = run full Notion<->Drive sync per the GotWurk sync SOP
+- [GotWurk Drive+Notion architecture](project_gotwurk_drive_notion_architecture.md) — two-system setup with defined sync ownership; check both before creating anything new
