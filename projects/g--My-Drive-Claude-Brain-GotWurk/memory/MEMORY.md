@@ -1,3 +1,4 @@
 - [Sync Wurk trigger](feedback_sync_wurk_trigger.md) — "Sync Wurk" = run full Notion<->Drive sync per the GotWurk sync SOP
 - [GotWurk Drive+Notion architecture](project_gotwurk_drive_notion_architecture.md) — two-system setup with defined sync ownership; check both before creating anything new
 - [Sci-Core lead](project_sci_core_lead.md) — first real Discovery Call, 2026-08-28, owner Egmar Schutte, supplements/e-commerce brand
+- [Gamma GotWurk theme](feedback_gamma_gotwurk_theme.md) — always pass themeId "zl2getz46uduoab" (GotWurk Theme) for GotWurk-related Gamma generations
