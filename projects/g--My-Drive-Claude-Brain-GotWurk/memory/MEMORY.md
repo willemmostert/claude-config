@@ -3,3 +3,5 @@
 - [Sci-Core lead](project_sci_core_lead.md) — first real Discovery Call, 2026-08-28, owner Egmar Schutte, supplements/e-commerce brand
 - [Gamma GotWurk theme](feedback_gamma_gotwurk_theme.md) — always pass themeId "zl2getz46uduoab" (GotWurk Theme) for GotWurk-related Gamma generations
 - [Apple design skill](feedback_apple_design_skill.md) — use installed `apple-design` skill for all GotWurk UI work; refine, don't replace brand colors
+- [No liquid glass](feedback_no_liquid_glass.md) — Willem rejected a glassmorphism reskin after seeing a live prototype; keep the flat dark-card look
+- [GotWurk OS1 vision](project_gotwurk_os1_vision.md) — Willem's own business-hub portal idea (clients tab, agents); deferred, not being built yet
