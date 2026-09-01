@@ -1,5 +1,4 @@
 {
-  "enableWorkflows": true,
   "hooks": {
     "Stop": [
       {
@@ -12,5 +11,7 @@
         ]
       }
     ]
-  }
+  },
+  "enableWorkflows": true,
+  "agentPushNotifEnabled": true
 }
