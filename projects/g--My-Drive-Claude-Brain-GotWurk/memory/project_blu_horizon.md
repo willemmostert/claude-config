@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 5137aabc-9146-44d1-91a5-103bfc70496c
-  modified: 2026-09-02T12:57:16.027Z
+  modified: 2026-09-02T13:19:39.681Z
 ---
 
 Blu Horizon (Chris & Amorie Hessling) is an existing GotWurk client with a full working folder already in Drive under a client folder (parentId `1u2akbaSxUy_Pl2KbTqA2UyN5GOdWGcSG`), not a brand-new engagement despite how it may be introduced in conversation.
@@ -25,3 +25,7 @@ Blu Horizon (Chris & Amorie Hessling) is an existing GotWurk client with a full 
 **Why this matters**: [[feedback_gotwurk_client_folder_check]] — always check the existing Drive client folder for a client before treating work as greenfield; Blu Horizon has extensive prior scoping, locked brand rules, and a live artifact that should be built on, not redone.
 
 **How to apply**: Before starting any new Blu Horizon work (website, social, proposals), read the existing docs above first, respect the locked brand guidelines, and check whether the V1 site artifact needs updating rather than recreating it. If the user references a "new" Fathom call beyond 2026-08-19, treat it as an update to this existing record, not a new client intake.
+
+**2026-09-02 update**: Christian (client) followed up directly asking for a status update, 4 weeks after the photoshoot, pushing to go live "asap." Actions taken: (1) bulk of photos were already uploaded to the Drive folder by Willem the day before; (2) a Gmail draft was created to bluhorizoncapetown@gmail.com requesting the outstanding items blocking go-live — Smoobu account-specific embed code/API key, domain/DNS access, Facebook go-ahead + handle, and confirmation of the direct-booking discount %; (3) built a reusable org-wide "Sensitive Information & Data Security Disclosure" doc (see [[feedback_gotwurk_client_folder_check]] sibling memory, actual file at `templates/sensitive-information-disclosure-template.md`), with a BLU-specific filled copy saved to the client folder — **not yet attached to the draft**, see [[feedback_gmail_base64_attachment_limit]].
+
+**Open item needing Willem's decision, not yet resolved**: Christian's message also asked to "clarify scope and costs" for the website + social media management. This engagement was originally framed as a free case-study/portfolio project (unconfirmed in writing). The draft reply deliberately did NOT invent numbers — it says a written scope/cost breakdown will follow separately. Willem needs to decide whether to keep this free or move to paid before that follow-up goes out.

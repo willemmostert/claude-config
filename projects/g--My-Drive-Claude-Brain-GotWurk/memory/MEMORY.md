@@ -6,3 +6,4 @@
 - [No liquid glass](feedback_no_liquid_glass.md) — Willem rejected a glassmorphism reskin after seeing a live prototype; keep the flat dark-card look
 - [GotWurk OS1 vision](project_gotwurk_os1_vision.md) — Willem's own business-hub portal idea (clients tab, agents); deferred, not being built yet
 - [Blu Horizon client](project_blu_horizon.md) — existing Airbnb client (not new); full docs + live V1 booking-site artifact already in Drive, V1 deadline was 2026-09-01
+- [Gmail base64 attachment limit](feedback_gmail_base64_attachment_limit.md) — verify hash before trusting a manually-retyped large base64 attachment; it can silently corrupt
