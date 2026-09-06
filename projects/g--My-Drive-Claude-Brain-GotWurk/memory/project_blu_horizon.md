@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 5137aabc-9146-44d1-91a5-103bfc70496c
-  modified: 2026-09-02T13:19:39.681Z
+  modified: 2026-09-06T23:35:19.991Z
 ---
 
 Blu Horizon (Chris & Amorie Hessling) is an existing GotWurk client with a full working folder already in Drive under a client folder (parentId `1u2akbaSxUy_Pl2KbTqA2UyN5GOdWGcSG`), not a brand-new engagement despite how it may be introduced in conversation.
@@ -29,3 +29,5 @@ Blu Horizon (Chris & Amorie Hessling) is an existing GotWurk client with a full 
 **2026-09-02 update**: Christian (client) followed up directly asking for a status update, 4 weeks after the photoshoot, pushing to go live "asap." Actions taken: (1) bulk of photos were already uploaded to the Drive folder by Willem the day before; (2) a Gmail draft was created to bluhorizoncapetown@gmail.com requesting the outstanding items blocking go-live — Smoobu account-specific embed code/API key, domain/DNS access, Facebook go-ahead + handle, and confirmation of the direct-booking discount %; (3) built a reusable org-wide "Sensitive Information & Data Security Disclosure" doc (see [[feedback_gotwurk_client_folder_check]] sibling memory, actual file at `templates/sensitive-information-disclosure-template.md`), with a BLU-specific filled copy saved to the client folder — **not yet attached to the draft**, see [[feedback_gmail_base64_attachment_limit]].
 
 **Open item needing Willem's decision, not yet resolved**: Christian's message also asked to "clarify scope and costs" for the website + social media management. This engagement was originally framed as a free case-study/portfolio project (unconfirmed in writing). The draft reply deliberately did NOT invent numbers — it says a written scope/cost breakdown will follow separately. Willem needs to decide whether to keep this free or move to paid before that follow-up goes out.
+
+**2026-09-07 client reply received** (two of the four outstanding items from the 2026-09-02 request): (1) Smoobu — client sent an iCal feed URL (`https://login.smoobu.com/ical/3239437.ics?s=S3So2akYHd`), verified live (21 booking blocks, Jan 2026–Jan 2027, dates only, no pricing). This is NOT what was asked for — the spec (`systems-and-ai.md`) needs Smoobu's embed code/API key for the live-pricing booking engine, not the read-only iCal export. (2) Facebook — client confirmed no page exists yet, only Instagram; proposed creating a Facebook page linked to the existing Instagram and sharing access with Willem, but so far has only logged into Meta with the Blu horizon email, nothing else set up. Domain/DNS access and the discount % are still outstanding. Detail logged in `onboarding.md` and `systems-and-ai.md`.
