@@ -8,3 +8,4 @@
 - [Blu Horizon client](project_blu_horizon.md) — existing Airbnb client (not new); full docs + live V1 booking-site artifact already in Drive, V1 deadline was 2026-09-01
 - [Gmail base64 attachment limit](feedback_gmail_base64_attachment_limit.md) — verify hash before trusting a manually-retyped large base64 attachment; it can silently corrupt
 - [GotWurk legal docs](project_gotwurk_legal_docs.md) — new `/legal` Drive folder holds a reusable Mutual NDA template, distinct from the data-disclosure template; not lawyer-reviewed
+- [GotWurk page structure standard](project_gotwurk_page_structure_standard.md) — landing pages follow Hero→Problem→Solution→How it works→Social proof→FAQ→CTA order, documented in website-code/PAGE-STRUCTURE.md
