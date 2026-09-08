@@ -5,6 +5,7 @@
 - [Apple design skill](feedback_apple_design_skill.md) — use installed `apple-design` skill for all GotWurk UI work; refine, don't replace brand colors
 - [No liquid glass](feedback_no_liquid_glass.md) — Willem rejected a glassmorphism reskin after seeing a live prototype; keep the flat dark-card look
 - [GotWurk OS1 vision](project_gotwurk_os1_vision.md) — Willem's own business-hub portal idea (clients tab, agents); deferred, not being built yet
+- [Freelance photo/video rate card](project_freelance_photography_video.md) — personal side rate card in `freelance/photography-video/`, Gamma pending credits, Notion skipped
 - [Blu Horizon client](project_blu_horizon.md) — existing Airbnb client (not new); full docs + live V1 booking-site artifact already in Drive, V1 deadline was 2026-09-01
 - [Gmail base64 attachment limit](feedback_gmail_base64_attachment_limit.md) — verify hash before trusting a manually-retyped large base64 attachment; it can silently corrupt
 - [GotWurk legal docs](project_gotwurk_legal_docs.md) — new `/legal` Drive folder holds a reusable Mutual NDA template, distinct from the data-disclosure template; not lawyer-reviewed

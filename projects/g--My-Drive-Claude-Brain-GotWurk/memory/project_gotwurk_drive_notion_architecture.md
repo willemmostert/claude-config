@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 24eabb80-3212-41c2-a1ec-cc2ae565e054
-  modified: 2026-08-19T00:13:10.475Z
+  modified: 2026-09-08T23:04:20.401Z
 ---
 
 GotWurk (Willem's business — "Fractional Operations & Business Systems," Systems + AI led, methodology Audit → Architect → Implement → Operate → Optimise) already has a full operating system built across two places, not a blank slate:
@@ -20,3 +20,4 @@ GotWurk (Willem's business — "Fractional Operations & Business Systems," Syste
 - Client folders live at `/clients/<status>/<category>/<client-slug>/` in Drive (status: leads/incubator/active-clients/closed, mirroring Notion Stage; category: social-media-clients/full-package-clients, mirroring Notion's Client Category field) — see `sops/client-folder-structure.md` for the full convention, including required files per client and the always-present `meeting-notes/` subfolder.
 - Full package clients = the core 90-Day Business Operating Transformation / retainer offer (business systems build). Social media management was originally positioned as an in-account upsell only, but as of 2026-08-19 GotWurk also pitches it standalone (e.g. to Airbnb hosts) — the Drive/Notion category taxonomy was extended to reflect that.
 - SOPs live in `sops/` in Drive — read the relevant one before changing structure (e.g. `client-folder-structure.md`, `notion-drive-sync.md`, `monthly-retainer-billing.md`).
+- **2026-09-09: the Notion HQ page ID above may not resolve.** In one session, `notion-search` for "GotWurk" returned zero results, the page ID `3b71ef07d0fb8187bb64caaccdcd1f8a` 404'd, and other searches surfaced pages from an apparently unrelated business ("Catalyst Curves," "Coach Productivity Suite") — meaning the Notion account connected to Claude at that time was not the GotWurk workspace. Don't trust this memory's page ID blindly: search first, and if "GotWurk" truly returns nothing, flag the workspace-connection mismatch to Willem (claude.ai connector settings) rather than create pages in whatever workspace happens to be connected.
