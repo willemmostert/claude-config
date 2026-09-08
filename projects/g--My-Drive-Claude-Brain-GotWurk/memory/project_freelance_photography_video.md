@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 2a983932-285b-45e2-81ec-1ed1624b7da9
-  modified: 2026-09-08T23:04:32.794Z
+  modified: 2026-09-08T23:07:13.919Z
 ---
 
 Willem runs freelance photography/videography as a side income stream, separate from GotWurk's
@@ -28,7 +28,9 @@ marked `[ ]` (deposit, cancellation policy, usage/licensing terms, turnaround ti
 that were never asserted as decided, since those are business/legal terms Willem didn't specify.
 The Gamma PDF was never generated — the workspace had 0 Gamma credits remaining as of 2026-09-09;
 retry once credits refill, content is already written in the doc (and in Gamma-ready `---`-broken
-form in this session's history) so it can go straight in. The Notion mirror was skipped entirely —
-see [[project_gotwurk_drive_notion_architecture]] for why (workspace-connection mismatch found the
-same day). Add Willem's real Hyrox/Red Bull photos once he provides them — don't fill that gap with
-stock or AI-generated images, since the card is meant to showcase his actual work.
+form in this session's history) so it can go straight in. The Notion mirror is now live under GotWurk™ HQ
+(https://app.notion.com/p/3d51ef07d0fb81ccba70c33a60f10171) — Willem reconnected the correct
+workspace later the same day; see [[project_gotwurk_drive_notion_architecture]] for the earlier
+mismatch. Keep the Drive doc and this Notion page in sync manually until/unless a real sync SOP
+covers this folder. Add Willem's real Hyrox/Red Bull photos once he provides them — don't fill that
+gap with stock or AI-generated images, since the card is meant to showcase his actual work.
