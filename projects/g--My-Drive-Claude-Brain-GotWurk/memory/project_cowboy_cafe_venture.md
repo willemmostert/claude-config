@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: e8032d27-e734-4af2-96f1-142d4ca31fbb
-  modified: 2026-09-09T10:29:04.299Z
+  modified: 2026-09-09T10:54:41.855Z
 ---
 
 Cowboy Cafe is a real in-house business venture (coffee shop, central Stellenbosch, proposed 2027 opening), co-founded by Willem and Marius — not a GotWurk client, not solo freelance work. Lives in a new top-level `ventures/cowboy-cafe/` folder in the GotWurk Drive vault, mirrored by a private Slack channel `#cowboy-cafe` (ID `C0C0FE1LDAN`) on the GotWurk workspace. Full details, source docs, and current numbers are in `ventures/cowboy-cafe/_overview.md` — treat that file as current, this memory as the pointer.
@@ -19,3 +19,5 @@ Key things worth remembering across sessions:
 - Marius produced a full, rigorous investment case (business plan, pitch deck, live financial model, design pack) issued 2026-09-07 — this is **his** concept/vision. Willem's stated intent is to independently build his own version and then merge the two. Don't treat Marius's plan as locked direction.
 - The plan as issued is decision-stage and explicitly not yet financeable: each founder needs to advance R545,820 to the company, against a R350,000 benchmark personal-loan ceiling — a ~R196k gap each. No site/lease, no legal/tax clearance, no supplier quotes yet.
 - One source file (Design Pack, 12.6MB pptx) couldn't be pulled from Slack — exceeded the 10MB file-read limit on the Slack MCP tool. Still needs to be added to `ventures/cowboy-cafe/source-docs/` via another route (smaller re-share, or direct drop into the folder).
+- **Division of labor (2026-09-09):** Willem is explicitly not building a competing financial model — Marius is the trusted expert on numbers/funding and that stays his lane. Willem's own contribution is creative/aesthetic direction: he's building a Pinterest board of visual references, then wants mockups/renders grounded in that board. Treat the Pinterest board, once shared, as the real design brief — don't preempt it by inventing visual direction from Marius's design pack alone.
+
