@@ -10,3 +10,5 @@
 - [Gmail base64 attachment limit](feedback_gmail_base64_attachment_limit.md) — verify hash before trusting a manually-retyped large base64 attachment; it can silently corrupt
 - [GotWurk legal docs](project_gotwurk_legal_docs.md) — new `/legal` Drive folder holds a reusable Mutual NDA template, distinct from the data-disclosure template; not lawyer-reviewed
 - [GotWurk page structure standard](project_gotwurk_page_structure_standard.md) — landing pages follow Hero→Problem→Solution→How it works→Social proof→FAQ→CTA order, documented in website-code/PAGE-STRUCTURE.md
+- [GotWurk web design system](project_gotwurk_web_design_system.md) — 2026-09-09 "Systems + AI" rebuild (black/mono/blue-signal, numbered modules) is now the standard for all GotWurk web/portal work; see website-code/DESIGN-SYSTEM.md
+- [GotWurk Ops Portal](project_gotwurk_ops_portal.md) — staff-only /ops dashboard scaffolded 2026-09-09, not live yet; blockers + checklist in website-code/DEPLOYMENT.md
