@@ -13,3 +13,4 @@
 - [GotWurk web design system](project_gotwurk_web_design_system.md) — 2026-09-09 "Systems + AI" rebuild (black/mono/blue-signal, numbered modules) is now the standard for all GotWurk web/portal work; see website-code/DESIGN-SYSTEM.md
 - [GotWurk Ops Portal](project_gotwurk_ops_portal.md) — staff-only /ops dashboard scaffolded 2026-09-09, not live yet; blockers + checklist in website-code/DEPLOYMENT.md
 - [Cowboy Cafe venture](project_cowboy_cafe_venture.md) — in-house coffee shop venture w/ Marius, tracked in ventures/cowboy-cafe/ + private Slack #cowboy-cafe; Marius's concept, Willem building his own to merge
+- [GotWurk client folder simplification](project_gotwurk_client_folder_simplification.md) — 2026-09-09: /clients flattened to /clients/<slug>/, no more status/category nesting
