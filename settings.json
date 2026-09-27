@@ -13,5 +13,6 @@
     ]
   },
   "enableWorkflows": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "model": "sonnet"
 }
