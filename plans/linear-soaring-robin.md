@@ -1,86 +1,71 @@
-# Sci-Core portal — department build-out (Phase 1: In-Store)
+# Sci-Core portal — Events, Wholesale, and @mentions (Phases 2–4)
 
 ## Context
 
-Marketing is the only fully-built department in the Sci-Core client portal (`gotwurkwebsite`, deploys from `main`). In-Store, Wholesale, Events, and Warehouse exist only as empty generic shells (comment box + shared deliverables + messages + KPI display) — confirmed by reading the actual code, not the vault notes (which were stale/wrong in places). Willem wants to build these out into real working departments, plus two cross-cutting features (@mention notifications, weekend/leave-aware end-of-day reporting).
+Phase 1 (In-Store daily numbers, KPI/Deliverables reorg, automated-messaging removal) shipped to `main` and is live. This plan covers the rest of the original department build-out in one pass, per Willem's request: **Phase 2 (Events)**, **Phase 3 (Wholesale, with invoice/shipment tracking)**, and **Phase 4 (@mentions + per-department notification badges)**. Warehouse was never scoped with any specifics and stays out of this pass.
 
-Given the size of the full ask, we agreed to build **one department fully, end-to-end, before starting the next**, in this order: **In-Store → Events → Wholesale → cross-cutting (@mentions, weekend/leave EOD)**. This plan covers **Phase 1: In-Store** in full implementation detail. Later phases are sketched at the end as a roadmap so scope stays visible, but will get their own detailed plan when we get there.
+Confirmed with Willem: the In-Store countdown on events only shows events explicitly flagged "Happens in-store" (not every event).
 
-In-Store's job (Rudi): every day, log the day's numbers (cans sold, sales in Rand, membership signups — exact metrics TBD, Willem will confirm with Rudi) on a calendar. The calendar shades days by sales intensity (like Marketing's activity heatmap, but by Rand value instead of follower activity), shows weekly/monthly totals, and feeds an end-of-day report that reads back what was logged for a one-tap confirm ("are these numbers accurate?").
+## Key architectural decision: generalize Phase 1's In-Store code, don't fork it
 
-## Key architectural decisions (from codebase research)
+Phase 1 built the daily-log system (`sales-daily-log.ts`, `SalesCalendar.tsx`, `LogDayModal.tsx`, `day-actions.ts`, `eod-actions.ts`, `SalesEodReportPanel.tsx`) hardcoded to `"sales"`. Wholesale needs the identical pattern (log any admin-defined KPI's daily number, weekend/leave-aware EOD, weekend-log combo). Rather than duplicate ~500 lines, **generalize these by department**, matching how `eod-reports.ts` was already generalized in Phase 1 when Marketing→In-Store was added:
 
-1. **Reuse the existing KPI system entirely for "the numbers."** `kpis`/`kpi_logs` already support: admin-defined ad-hoc KPIs per department (no fixed catalog), department scoping via `KpiManager` (`src/components/portal/KpiManager.tsx`, `src/app/portal/(app)/kpis/actions.ts`), and a `kpi_logs` insert path with no department or same-day restriction (`src/lib/kpi-tracking.ts`'s `recomputeKpis` already re-derives `current_value` from all logs in-period). Willem/Rudi don't yet know the exact metric names — that's fine, since KPIs are admin-defined at any time with zero code changes. **No exact-metrics blocker for this build.**
-2. **New table `dept_day_logs`** is the "this day was logged" anchor (customer_id, department, log_date, notes, submitted, submitted_at, logged_by, logged_by_name) — generic by department so Events/Wholesale can reuse it in later phases. Actual numeric values still live in `kpi_logs` (tagged so we can identify/replace them on edit — see below); `dept_day_logs` just marks a day as logged and carries free-text notes.
-3. **New reusable presentational component `MonthCalendar`** (`src/components/portal/calendar/MonthCalendar.tsx`) — a from-scratch month grid + week-view toggle, not an extension of `CalendarWeek.tsx` (that component is deeply coupled to Metricool/marketing per research — reusing it would mean a rewrite anyway). Grid math (month offset/day-cell generation) is lifted from the existing `DatePicker.tsx` popover, which already has exactly this logic. Pure props: `{ month, year, view: "month"|"week", weekAnchor, onSelectDate, renderDay(date) => node, shadeValue?(date) => number 0..1 }` — no business logic, no department awareness. Events (Phase 2) will reuse this same component; this is not speculative — it's the very next phase already scoped with the user.
-4. **Calendar shading** copies the exact formula from `CalendarWeek.tsx`'s `useActivityLookup`/`HourRow`: normalize a day's value against the max value in the visible month, then `color-mix(in srgb, var(--accent-blue) round(normalized*45)%, transparent)` (matching Marketing's existing look-and-feel). To know *which* KPI drives shading without hardcoding "Sales in Rand," add one nullable boolean column `kpis.is_primary_metric` (admin checks it once per department in `KpiManager`, enforced client-side to allow only one true per department). Shading and the weekly/monthly totals footer both read this KPI's `kpi_logs`.
-5. **EOD reports generalized to accept a department.** `EOD_DEPARTMENT` today is a hardcoded module constant in `src/lib/eod-reports.ts`; `getOrCreateTodayReport`/`ensureAndLockEodReports` close over it directly. Add a `department: string` parameter to both functions (mechanical change — the `portal_eod_reports` table and the "missed" sweep are already department-agnostic). Add a second job entry in `src/lib/marketing-processor.ts`'s job list for `sales`. Build a **new, separate** submit/detail flow for In-Store (`src/app/portal/(app)/sales/eod-actions.ts`, `SalesEodReportPanel.tsx`) — do not touch Marketing's post-attribution flow, since In-Store's report content (confirm logged numbers) is structurally different from Marketing's (attribute posts to KPIs).
-6. **Weekends**: nothing needs to change to allow logging on Saturday/Sunday — `kpi_logs`/`dept_day_logs` writes aren't gated by weekday at all, only *EOD report creation* is (`isWeekday()`), and that's already correct per Willem's ask (no EOD prompt on weekends). Add one small affordance: a "Log the weekend" button that appears only on Monday, opening the same Log Day modal in a two-day mode (Saturday + Sunday stacked in one form, submitted together).
-7. **Leave days**: new `profile_leave_days` table (`profile_id`, `customer_id`, `start_date`, `end_date`), self-service — a person adds/removes their own leave dates from their own Profile page (`src/app/portal/(app)/profile/page.tsx`), RLS-scoped to their own `profile_id`. Extend the EOD creation gate: skip creating a department's report for a day only if **every** profile whose `departments` includes that department is on leave that day (handles the common single-owner case — Rudi for In-Store — without a deeper per-person-report redesign, which `portal_eod_reports`'s schema doesn't support today anyway).
-8. **Quick-link buttons**: follow the existing convention exactly (Marketing's Drive/Metricool buttons in `CalendarTable.tsx` are hardcoded URL constants in the component, not admin-configurable). Add a small `QuickLinks.tsx` row (pill buttons, brand color + icon) rendered between the calendar and the comment box on the In-Store page, for a Lightspeed button. **Real Lightspeed URL is unknown — use a clearly-labeled placeholder `href="#"` and flag to Willem to supply the real login/deep-link URL before shipping.**
+- `src/lib/sales-daily-log.ts` → `src/lib/dept-daily-log.ts`: drop the `SALES_DEPARTMENT` constant, every function takes `department: string`; `DAILY_LOG_NOTE` becomes `dailyLogNote(department)`; `salesManualKpis` → `deptManualKpis(department, kpis)`; `getSalesData()` → `getDeptDailyLogData(department)`.
+- Server actions move out of the `sales/` route folder into neutral top-level files both departments call: `src/app/portal/(app)/daily-log/day-actions.ts` and `.../daily-log/eod-actions.ts`, each taking `department` as an explicit argument, with `guard()` validating it's one of `["sales", "wholesale"]`.
+- `SalesCalendar.tsx` → `src/components/portal/department/DailyLogCalendar.tsx`, taking a `department` prop plus an optional `extraRenderDay?: (ymd) => ReactNode` slot (Wholesale layers its invoice-span bars through this; In-Store passes nothing).
+- `LogDayModal.tsx` and `SalesEodReportPanel.tsx` become department-agnostic (take `department` as a prop, call the new shared actions).
+- `DeptShell.tsx`'s `department === "sales"` EOD-panel check becomes `["sales", "wholesale"].includes(department)`.
+- `sales/page.tsx` shrinks to just pass `department="sales"` into the generalized components; `wholesale/page.tsx` becomes a near-mirror plus its invoice panel.
 
-## Data model changes (new migration `supabase/migrations/2026XXXX_instore_daily_log.sql`)
+This means Wholesale gets weekend logging, the Monday "log the weekend" combo, and its own leave-aware EOD report for free — no separate "Phase 4 rollout" work needed.
 
-```sql
-alter table public.kpis add column if not exists is_primary_metric boolean not null default false;
+## Phase 2 — Events
 
-create table if not exists public.dept_day_logs (
-  id uuid primary key default gen_random_uuid(),
-  customer_id uuid not null references public.customers(id) on delete cascade,
-  department text not null,
-  log_date date not null,
-  notes text,
-  submitted boolean not null default false,
-  submitted_at timestamptz,
-  logged_by uuid references public.profiles(id) on delete set null,
-  logged_by_name text,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  unique (customer_id, department, log_date)
-);
--- RLS: select/insert/update scoped to customer_id + can_access_department(department), mirroring page_comments' policy shape.
+**Data model** (new migration): `events` table — `id, customer_id, event_date, name, stock_needed (text), kpi_id (nullable fk to kpis), in_store (boolean default false), notify_marketing (boolean default false), notes, created_by, created_at`. RLS scoped via `can_access_department('events')`, same shape as `dept_day_logs`.
 
-create table if not exists public.profile_leave_days (
-  id uuid primary key default gen_random_uuid(),
-  profile_id uuid not null references public.profiles(id) on delete cascade,
-  customer_id uuid not null references public.customers(id) on delete cascade,
-  start_date date not null,
-  end_date date not null check (end_date >= start_date),
-  created_at timestamptz not null default now()
-);
--- RLS: a profile can select/insert/delete only rows where profile_id = their own profile id.
-```
+**Calendar**: reuse `MonthCalendar` directly (it's already fully generic — no changes needed). New `EventsCalendar.tsx`: month/week toggle, `shadeValue` driven by event *count* per day (not a KPI amount) normalized against the max in the visible range, `renderDay` shows event name(s) inline. Click a day → `EventModal` (new): lists existing events that day, "+ Add event" form (name, stock needed, KPI dropdown sourced from Events-department KPIs via the existing `kpis`/`getKpis` system — same "admin defines KPIs, this just tags them" approach as In-Store, no new KPI-logging math), "Happens in-store" checkbox, "Notify marketing" checkbox.
 
-`kpi_logs` rows written by the daily-log form are tagged `note = 'In-Store daily log'` so the replace-on-edit logic (below) only ever touches rows it owns, never Marketing's EOD-attributed rows.
+**Notify marketing**: this is a direct, human-triggered action (Rudy ticking a box while creating a real event), not automation — same category as the "New deliverable: X" receipts we deliberately kept when removing automated messages. On submit, if checked, insert one `dept_inbox` message to `marketing` with `from_name` = the real signed-in person's name (mirrors `assignDeliverable`'s pattern in `management/actions.ts`).
 
-## New/changed files
+**In-Store countdown**: new small `UpcomingEventsCard.tsx` rendered on the In-Store page (between `QuickLinks` and `DailyLogCalendar`), server-fetches events where `in_store = true` and `event_date >= today`, shows the soonest 1–3 as a countdown ("SkiErg Challenge — in 4 days, Thu 2 Oct") linking to `/portal/events`.
 
-**New:**
-- `src/components/portal/calendar/MonthCalendar.tsx` — generic month/week grid (see decision #3).
-- `src/components/portal/sales/SalesCalendar.tsx` — wraps `MonthCalendar`, fetches the month's `dept_day_logs` + primary-KPI `kpi_logs`, computes shading, renders weekly/monthly total footers, opens `LogDayModal`.
-- `src/components/portal/sales/LogDayModal.tsx` — lists this department's manual KPIs with number inputs (prefilled from today's/this-day's `kpi_logs`), a notes field, single-day or two-day (weekend) mode.
-- `src/app/portal/(app)/sales/day-actions.ts` — `getDayLog(date)`, `submitDayLog(date | {from,to}, values, notes)`: upserts `dept_day_logs`, replaces (delete-then-insert, tagged by note) that day's manual `kpi_logs` rows, calls `recomputeKpis()`.
-- `src/components/portal/sales/QuickLinks.tsx` — Lightspeed button (placeholder URL, flagged).
-- `src/app/portal/(app)/sales/eod-actions.ts` — `getSalesEodReportView()`, `submitSalesEod()`: reads today's `dept_day_logs`/`kpi_logs` for confirm-or-edit.
-- `src/components/portal/sales/SalesEodReportPanel.tsx` — mirrors `EodReportPanel.tsx`'s shell/timing UI, different body (numbers confirm, not post attribution).
-- Profile page addition: a small "Leave days" card (reuse two `DatePicker`s as a from/to pair — no new range-picker component needed) + list/remove of upcoming leave, server actions in a new `src/app/portal/(app)/profile/leave-actions.ts`.
+**Files**: `src/app/portal/(app)/events/{page.tsx,layout.tsx,event-actions.ts}`, `src/components/portal/events/{EventsCalendar.tsx,EventModal.tsx}`, `src/components/portal/UpcomingEventsCard.tsx`, migration `2026101X_events.sql`.
 
-**Changed:**
-- `src/app/portal/(app)/sales/page.tsx` — becomes bespoke (like `marketing/page.tsx`) instead of the 9-line generic wrapper: renders `SalesCalendar` + `QuickLinks` above the existing `DepartmentPage` pieces (or composes `DeptShell` directly the way Marketing does).
-- `src/lib/eod-reports.ts` — `getOrCreateTodayReport`/`ensureAndLockEodReports` gain a `department: string` param; `isWeekday` gains the leave-day check (rename conceptually to `isReportableDay`); `EOD_DEPARTMENT` constant removed once both call sites (marketing, sales) pass their department explicitly.
-- `src/lib/marketing-processor.ts` — job list gets a second `["eod-sales", () => ensureAndLockEodReports(db, customerId, now, "sales")]`-style entry (exact wiring TBD when implementing — may warrant renaming the file/route since it's no longer marketing-only, but that's a larger rename best left alone for this phase to limit blast radius).
-- `src/components/portal/KpiManager.tsx` — add the "Use for calendar shading" checkbox wired to `is_primary_metric`, with client-side enforcement of one-per-department.
-- `supabase/migrations/` — new migration file per above.
+## Phase 3 — Wholesale
 
-## Verification
+**Reuses the generalized daily-log system** (above) for the day-by-day numbers (stock sold/in stock/to ship/shipped — all just admin-defined KPIs under department "Wholesale", exactly like In-Store's cans/Rand/signups).
 
-- `npm run build` / `tsc --noEmit` in `/c/Users/info/Developer/gotwurkwebsite` before any commit (existing project convention per commit history).
-- Run the new migration against the real Supabase project via the SQL editor (same manual-paste workflow used for every prior migration in this project — confirmed from vault notes, no automated migration runner exists).
-- Manually exercise in a browser once deployed to a preview branch: create 2-3 In-Store KPIs via `/portal/kpis`, mark one "primary," log a day's numbers via the new calendar, confirm shading appears and intensifies with higher values, confirm the EOD report at 16:30 SAST shows the logged numbers for confirm/edit, confirm weekend logging works with no EOD prompt, confirm the Monday "Log the weekend" flow, confirm a self-added leave day suppresses the next day's EOD report.
-- This plan does not commit/push/merge or run migrations automatically — implementation will happen on a new branch (matching existing workflow: `departments-events-wholesale`-style feature branch → PR → Willem merges), migrations get handed to Willem to paste into Supabase like every prior one.
+**Invoice/shipment tracking — new `wholesale_invoices` table**: `id, customer_id, client_name, amount (numeric), file_path (nullable, storage object path), sent_date, paid (boolean default false), paid_date, follow_up_date, follow_up_deliverable_id (fk mk_deliverables, nullable), ship_date, delivered_date, courier, notes, created_by, created_at, updated_at`. RLS via `can_access_department('wholesale')`.
 
-## Roadmap after Phase 1 (not detailed yet)
+**Storage**: new private `wholesale-invoices` bucket, RLS policy copied verbatim in shape from `marketing-media`'s (`can_access_department('wholesale')` + tenant-folder check), path `${customerId}/invoices/...`. Upload flow mirrors `KpiUploader.tsx`'s exact pattern (`src/components/portal/management/KpiUploader.tsx`): client uploads via `createClient().storage.from(...).upload(...)`, then a server action records the row.
 
-- **Phase 2 — Events**: month calendar (reusing `MonthCalendar`) for Rudi to create events (name, stock needed, KPI contribution or none, "notify marketing" flag), shaded by proximity/density rather than a numeric KPI.
-- **Phase 3 — Wholesale**: same day-log pattern as In-Store (stock sold/in-stock/to-ship) plus a new invoice system — real file upload into portal storage (Supabase Storage bucket, mirroring the existing avatar-upload pattern), sent/paid tracking, auto-created follow-up reminders, and a shipment-duration visual spanning multiple calendar days.
-- **Phase 4 — Cross-cutting**: @mention parsing in `page_comments` (needs a real profile-id-based person picker — `portal_access`/name-string assignees aren't sufficient, per research), a per-person unread-mentions badge on the Sidebar (modeled on the existing `unreadPatches` pattern, `portal_patch_reads`-shaped), and rolling the leave-day EOD suppression + weekend-log pattern out to Wholesale/Events once they have their own day-logs.
+**Follow-up deliverable**: creating an invoice with a `follow_up_date` creates a real `mk_deliverables` row (department: wholesale, category: Admin, due_date: follow_up_date) via the same insert shape `assignDeliverable` uses, id stored back on the invoice. Marking an invoice paid auto-completes that deliverable if still open. This surfaces naturally on the existing Deliverables board and the KPIs & Deliverables overview — no new UI needed for the reminder itself.
+
+**Calendar visual**: `DailyLogCalendar`'s `extraRenderDay` slot renders two thin spanning bars per day cell for Wholesale — a payment-status bar (sent_date → paid_date/today, blue/amber/red by status) and a shipping bar (ship_date → delivered_date/today, a distinct color), each with a rounded cap only on its true start/end day so adjacent cells read as one continuous bar (the same segmented-bar technique multi-day calendar events commonly use).
+
+**Invoices panel**: new `InvoicesPanel.tsx` below the calendar — list of live invoices with inline "Mark sent/paid" + "+ New invoice" (client name, amount, sent date, follow-up date, optional file upload). Not driven by clicking a calendar day (an invoice has its own dates, unlike a daily log entry).
+
+**Quick links**: new `src/components/portal/wholesale/QuickLinks.tsx` — Lightspeed button not needed here (that's In-Store's system); buttons are: Upload invoice (scrolls to/opens `InvoicesPanel`'s form), Email (`mailto:` placeholder), WhatsApp (`wa.me` placeholder, green) — both placeholders flagged the same way Lightspeed's URL was.
+
+**Files**: `wholesale/page.tsx` rewritten (was generic shell), `wholesale/{invoice-actions.ts}`, `src/components/portal/wholesale/{InvoicesPanel.tsx,QuickLinks.tsx}`, migration `2026101X_wholesale_invoices.sql`.
+
+## Phase 4 — @mentions and per-department notification badges
+
+**Roster lookup problem, resolved**: confirmed via research that `profiles` has no RLS policy letting anyone read another profile at the same business — not even executives (the old own-row policies were dropped in `20260919_harden_profiles_privilege_escalation.sql` and never replaced). Rather than add a new RLS policy (bigger security surface), reuse the existing escape hatch this codebase already uses for the same problem (`src/lib/activity-tracking.ts`, `src/lib/eod-reports.ts`): a server action that resolves `customer_id` server-side from the caller's own session, then queries with `createAdminClient()` — never trusting a client-supplied customer_id. New `getMentionRoster()` in a new `src/app/portal/(app)/mentions/actions.ts`.
+
+**Data model** (new migration): `page_comments` gets `mentioned_profile_ids uuid[] not null default '{}'`. New `profile_mentions` table (per-person notification record, same shape idiom as `portal_patch_reads`): `id, profile_id (fk profiles), customer_id, department, comment_id (fk page_comments), mentioned_by_name, read_at, created_at`; RLS: `profile_id in (select id from profiles where user_id = auth.uid())` (the person can read/update-as-read their own mentions) `or is_service_provider()`.
+
+**Comment box UI**: new `MentionTextarea.tsx` wraps the existing plain `<textarea>` in `PageComments.tsx` — tracks the word at the cursor, and when it starts with `@`, shows a dropdown (fetched once from `getMentionRoster()`, filtered client-side) below the textarea; picking a name replaces `@partial` with `@Full Name ` and records that person's `profile_id` in local state. On submit, `addPageComment` gains a `mentionedProfileIds: string[]` parameter — server re-validates each id actually belongs to the customer (via admin client) before storing, and inserts one `profile_mentions` row per validated id (also via admin client, since the mentioner's own RLS session can't write rows for someone else's `profile_id` — same reasoning as `portal_patch_reads`).
+
+**Sidebar badge**: new `unreadMentionsByDept: Record<string, number>` prop on `Sidebar` (alongside the existing `unreadPatches`, not replacing it), computed in `src/app/portal/(app)/layout.tsx` the same way `unreadPatches` already is (one more admin-scoped query, grouped in JS). Rendered as a numeric pill (`rounded-full bg-accent-blue px-1.5 text-[11px] font-medium text-white`, matching `MessagesPanel.tsx`'s existing unread-count style — not the pulsing dot used for patches) next to whichever department nav link has `unreadMentionsByDept[link.department] > 0`.
+
+**Marking read**: `DeptCommentBox.tsx` (already a per-department server component) additionally updates `profile_mentions` to `read_at = now()` for the signed-in profile + that department where still unread — legal under RLS since it's a person updating their own rows, no admin client needed there.
+
+**Files**: `src/components/portal/department/MentionTextarea.tsx` (or fold into `PageComments.tsx`), `src/app/portal/(app)/mentions/actions.ts`, changes to `PageComments.tsx`, `department/actions.ts`'s `addPageComment`, `Sidebar.tsx`, `layout.tsx`, `DeptCommentBox.tsx`, migration `2026101X_mentions.sql`.
+
+## Verification (all phases)
+
+- `npx tsc --noEmit` and `npx eslint` on every new/changed file after each phase (same as Phase 1), fixing anything that isn't pre-existing noise.
+- New branch off current `main` (`instore-daily-log` is already merged) — work happens as separate commits per phase on one branch, pushed and opened as a PR the same way as Phase 1, not committed/pushed until asked.
+- Three new migrations (Events, Wholesale, Mentions) handed to Willem the same manual-paste way as every prior one — not run automatically.
+- Manual browser check once deployed to preview: create an Events entry flagged "in-store" and confirm it shows on the In-Store countdown; create a Wholesale invoice, mark it sent then paid, confirm the follow-up deliverable appears and auto-completes, and confirm the calendar bar renders across the right days; @mention someone in a comment and confirm their Sidebar badge appears and clears when they open that department.
