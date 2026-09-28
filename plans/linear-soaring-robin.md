@@ -1,71 +1,62 @@
-# Sci-Core portal — Events, Wholesale, and @mentions (Phases 2–4)
+# Sci-Core portal — shared Product/Stock system, In-Store sales logging, Events stock requests, KPI page layout
 
 ## Context
 
-Phase 1 (In-Store daily numbers, KPI/Deliverables reorg, automated-messaging removal) shipped to `main` and is live. This plan covers the rest of the original department build-out in one pass, per Willem's request: **Phase 2 (Events)**, **Phase 3 (Wholesale, with invoice/shipment tracking)**, and **Phase 4 (@mentions + per-department notification badges)**. Warehouse was never scoped with any specifics and stays out of this pass.
+Willem wants the 42-product catalog we just scraped from sci-core.co.za turned into a real, shared inventory system inside the portal — not just a one-off reference page. It needs to live in Wholesale (as "the main wholesale database"), In-Store, and Warehouse, staying in sync across all three, plus: a new product-based daily sales flow for In-Store (replacing manual KPI number entry), structured stock requests on Events, and a vertical-column layout for the KPIs & Goals page. Confirmed with Willem: "the membership tab" meant Warehouse; In-Store's product-sales logging **replaces** its KPI number-entry (any KPI that should track it gets computed automatically); the 40% membership discount is one global rate, not per-product.
 
-Confirmed with Willem: the In-Store countdown on events only shows events explicitly flagged "Happens in-store" (not every event).
+## Data model (three new migrations)
 
-## Key architectural decision: generalize Phase 1's In-Store code, don't fork it
+**`products`** — the single shared catalog, one row per product, with a quantity per physical location so each department's stock view stays separate but always reads the same numbers:
+```
+id, customer_id, name, info (text), image_url, shopify_handle, shopify_url,
+retail_price numeric, status text check in ('in_development','coming_soon','new','active','old_stock','discontinued') default 'active',
+new_until date (status='new' auto-reads as expired once past this date — computed in the UI, not enforced by a job),
+warehouse_qty int default 0, wholesale_qty int default 0, store_qty int default 0,
+low_stock_threshold int default 10,
+created_by, created_at, updated_at
+```
+RLS: any of `can_access_department('warehouse'|'wholesale'|'sales')`, matching the "separate tabs, same data" requirement — there's no single owning department.
 
-Phase 1 built the daily-log system (`sales-daily-log.ts`, `SalesCalendar.tsx`, `LogDayModal.tsx`, `day-actions.ts`, `eod-actions.ts`, `SalesEodReportPanel.tsx`) hardcoded to `"sales"`. Wholesale needs the identical pattern (log any admin-defined KPI's daily number, weekend/leave-aware EOD, weekend-log combo). Rather than duplicate ~500 lines, **generalize these by department**, matching how `eod-reports.ts` was already generalized in Phase 1 when Marketing→In-Store was added:
+**`product_sales`** — In-Store's per-sale log (and reusable by Wholesale later if it ever needs the same pattern): `id, customer_id, product_id, department, sale_date, quantity, price_tier ('membership'|'retail'), unit_price (snapshot at sale time), total, logged_by, logged_by_name, created_at`. Same multi-department RLS shape as `dept_day_logs`.
 
-- `src/lib/sales-daily-log.ts` → `src/lib/dept-daily-log.ts`: drop the `SALES_DEPARTMENT` constant, every function takes `department: string`; `DAILY_LOG_NOTE` becomes `dailyLogNote(department)`; `salesManualKpis` → `deptManualKpis(department, kpis)`; `getSalesData()` → `getDeptDailyLogData(department)`.
-- Server actions move out of the `sales/` route folder into neutral top-level files both departments call: `src/app/portal/(app)/daily-log/day-actions.ts` and `.../daily-log/eod-actions.ts`, each taking `department` as an explicit argument, with `guard()` validating it's one of `["sales", "wholesale"]`.
-- `SalesCalendar.tsx` → `src/components/portal/department/DailyLogCalendar.tsx`, taking a `department` prop plus an optional `extraRenderDay?: (ymd) => ReactNode` slot (Wholesale layers its invoice-span bars through this; In-Store passes nothing).
-- `LogDayModal.tsx` and `SalesEodReportPanel.tsx` become department-agnostic (take `department` as a prop, call the new shared actions).
-- `DeptShell.tsx`'s `department === "sales"` EOD-panel check becomes `["sales", "wholesale"].includes(department)`.
-- `sales/page.tsx` shrinks to just pass `department="sales"` into the generalized components; `wholesale/page.tsx` becomes a near-mirror plus its invoice panel.
+**`store_settings`** — one row per business: `customer_id (pk), membership_discount_pct numeric default 40`. The single global discount rate, editable from the Stock view.
 
-This means Wholesale gets weekend logging, the Monday "log the weekend" combo, and its own leave-aware EOD report for free — no separate "Phase 4 rollout" work needed.
+**Events**: `alter table events add column stock_requests jsonb not null default '[]'` — an array of `{product_id, quantity, source: 'warehouse'|'wholesale'|'store'}`, same jsonb-array-for-a-variable-length-list pattern already used by `mk_calendar_rows.links`.
 
-## Phase 2 — Events
+**Seed migration**: the 42 real products (name, price, image URL, availability → status) as plain `insert` statements generated from the scrape — real portal pages aren't sandboxed like the Artifact tool, so `image_url` just points straight at the existing Shopify CDN URLs (`cdn.shopify.com/...`), no re-hosting needed.
 
-**Data model** (new migration): `events` table — `id, customer_id, event_date, name, stock_needed (text), kpi_id (nullable fk to kpis), in_store (boolean default false), notify_marketing (boolean default false), notes, created_by, created_at`. RLS scoped via `can_access_department('events')`, same shape as `dept_day_logs`.
+## Shared Product/Stock UI
 
-**Calendar**: reuse `MonthCalendar` directly (it's already fully generic — no changes needed). New `EventsCalendar.tsx`: month/week toggle, `shadeValue` driven by event *count* per day (not a KPI amount) normalized against the max in the visible range, `renderDay` shows event name(s) inline. Click a day → `EventModal` (new): lists existing events that day, "+ Add event" form (name, stock needed, KPI dropdown sourced from Events-department KPIs via the existing `kpis`/`getKpis` system — same "admin defines KPIs, this just tags them" approach as In-Store, no new KPI-logging math), "Happens in-store" checkbox, "Notify marketing" checkbox.
+One component, three mount points — same pattern as `DailyLogCalendar` being shared by In-Store/Wholesale:
 
-**Notify marketing**: this is a direct, human-triggered action (Rudy ticking a box while creating a real event), not automation — same category as the "New deliverable: X" receipts we deliberately kept when removing automated messages. On submit, if checked, insert one `dept_inbox` message to `marketing` with `from_name` = the real signed-in person's name (mirrors `assignDeliverable`'s pattern in `management/actions.ts`).
+- `src/components/portal/products/ProductStockPanel.tsx` — takes `primaryLocation: "warehouse" | "wholesale" | "store"`. Shows every product as a card/row: photo, name, status badge (Coming Soon / New / Old Stock / In Development, "New" auto-hides once `new_until` passes), retail price, this location's quantity (editable, prominent) plus the other two locations' quantities (read-only, for the cross-department overview), a stock-health dot (out of stock / low / healthy, from `low_stock_threshold`). "+ Add product" and "Delete" (with confirm). A "Membership discount" field at the top (reads/writes `store_settings`, one global number).
+- `src/components/portal/products/ProductPicker.tsx` — a searchable dropdown showing each product's thumbnail + name (a native `<select>` can't show images). Reused by the In-Store sales modal and the Events stock-request rows.
+- `src/app/portal/(app)/products/actions.ts` — `getProducts()`, `addProduct()`, `updateProduct()` (name/info/price/status/new_until/the three quantities), `deleteProduct()`, `getDiscountRate()`, `setDiscountRate()`.
+- New routes, each a thin wrapper: `sales/stock/page.tsx`, `wholesale/stock/page.tsx`, `warehouse/stock/page.tsx` rendering `<ProductStockPanel primaryLocation="..." />`.
+- Quick-link buttons: Wholesale's `QuickLinks.tsx` gains a "Stock" button (next to Invoices/Email/WhatsApp) linking to `/portal/wholesale/stock`. In-Store's `QuickLinks.tsx` gains an "In-Store Stock" button (next to Lightspeed) linking to `/portal/sales/stock`. Both use the Sci-Core "S" logo if Willem finds one; a generic package icon otherwise (flagged the same way the other placeholder buttons were).
 
-**In-Store countdown**: new small `UpcomingEventsCard.tsx` rendered on the In-Store page (between `QuickLinks` and `DailyLogCalendar`), server-fetches events where `in_store = true` and `event_date >= today`, shows the soonest 1–3 as a countdown ("SkiErg Challenge — in 4 days, Thu 2 Oct") linking to `/portal/events`.
+## In-Store: product-sales logging replaces KPI entry
 
-**Files**: `src/app/portal/(app)/events/{page.tsx,layout.tsx,event-actions.ts}`, `src/components/portal/events/{EventsCalendar.tsx,EventModal.tsx}`, `src/components/portal/UpcomingEventsCard.tsx`, migration `2026101X_events.sql`.
+Reuses everything from the daily-log system except the modal:
+- New `src/components/portal/sales/SalesDayModal.tsx` — for the selected date(s): a list of line items (`ProductPicker` + quantity + a Membership 40% off / Full retail toggle — no manual price typing), add/remove rows, save.
+- New `src/app/portal/(app)/sales/sales-log-actions.ts`: `submitProductSales(dates, lineItems)` — inserts `product_sales` rows (unit price computed server-side from the product's `retail_price` and the current `store_settings` discount, never trusted from the client), decrements each sold product's `store_qty`, and — this is the "gets computed automatically" part — upserts `dept_day_logs` plus a `kpi_logs` row for whichever KPI is flagged `is_primary_metric` on In-Store, with the day's total Rand value, tagged with the existing `dailyLogNote("sales")`. This means the calendar shading/weekly/monthly totals from the last build keep working unchanged — they just get their number from real sales instead of a typed-in figure.
+- `DailyLogCalendar.tsx` gains an optional `renderModal?: (dates, onClose) => ReactNode` prop; when provided it's used instead of the default `LogDayModal`. In-Store's page passes `SalesDayModal`; Wholesale and Warehouse pass nothing and keep today's generic KPI-number modal.
 
-## Phase 3 — Wholesale
+## Warehouse joins the daily-log system
 
-**Reuses the generalized daily-log system** (above) for the day-by-day numbers (stock sold/in stock/to ship/shipped — all just admin-defined KPIs under department "Wholesale", exactly like In-Store's cans/Rand/signups).
+`DAILY_LOG_DEPARTMENTS` in `src/lib/dept-daily-log.ts` gains `"warehouse"` — since every daily-log function, the EOD report, and `DeptShell`'s panel logic already key off this one array, this alone gives Warehouse the click-a-day popup, weekend logging, and its own leave-aware end-of-day report, matching In-Store and Wholesale. `warehouse/page.tsx` and a new `warehouse/layout.tsx` go from the generic `DepartmentPage` shell to a bespoke page (mirroring `sales/page.tsx`): comment box, a "Stock Management" quick-link, `DailyLogCalendar`, deliverables.
 
-**Invoice/shipment tracking — new `wholesale_invoices` table**: `id, customer_id, client_name, amount (numeric), file_path (nullable, storage object path), sent_date, paid (boolean default false), paid_date, follow_up_date, follow_up_deliverable_id (fk mk_deliverables, nullable), ship_date, delivered_date, courier, notes, created_by, created_at, updated_at`. RLS via `can_access_department('wholesale')`.
+## Events: structured stock requests
 
-**Storage**: new private `wholesale-invoices` bucket, RLS policy copied verbatim in shape from `marketing-media`'s (`can_access_department('wholesale')` + tenant-folder check), path `${customerId}/invoices/...`. Upload flow mirrors `KpiUploader.tsx`'s exact pattern (`src/components/portal/management/KpiUploader.tsx`): client uploads via `createClient().storage.from(...).upload(...)`, then a server action records the row.
+`EventModal.tsx`'s form gains a repeatable "Products needed" section: `ProductPicker` + quantity + a source select (Warehouse / Wholesale / In-Store), add/remove rows, stored as `stock_requests` on the event. Replaces the current free-text "stock needed" field (kept as a fallback note for anything not worth a structured line, e.g. "extra tables").
 
-**Follow-up deliverable**: creating an invoice with a `follow_up_date` creates a real `mk_deliverables` row (department: wholesale, category: Admin, due_date: follow_up_date) via the same insert shape `assignDeliverable` uses, id stored back on the invoice. Marking an invoice paid auto-completes that deliverable if still open. This surfaces naturally on the existing Deliverables board and the KPIs & Deliverables overview — no new UI needed for the reminder itself.
+## KPIs & Goals: vertical department columns
 
-**Calendar visual**: `DailyLogCalendar`'s `extraRenderDay` slot renders two thin spanning bars per day cell for Wholesale — a payment-status bar (sent_date → paid_date/today, blue/amber/red by status) and a shipping bar (ship_date → delivered_date/today, a distinct color), each with a rounded cap only on its true start/end day so adjacent cells read as one continuous bar (the same segmented-bar technique multi-day calendar events commonly use).
+`KpiManager.tsx`'s department sections currently stack full-width, top to bottom. Restructure the wrapping container to a horizontally-scrolling row of fixed-width columns (one per department — In-Store, Wholesale, Marketing, Events, Warehouse side by side), each column keeping its own existing internal layout (owner sub-groups, KPI cards) stacked vertically inside it. `DeliverablesOverview` below is left as it is — only the KPI section was asked for.
 
-**Invoices panel**: new `InvoicesPanel.tsx` below the calendar — list of live invoices with inline "Mark sent/paid" + "+ New invoice" (client name, amount, sent date, follow-up date, optional file upload). Not driven by clicking a calendar day (an invoice has its own dates, unlike a daily log entry).
+## Verification
 
-**Quick links**: new `src/components/portal/wholesale/QuickLinks.tsx` — Lightspeed button not needed here (that's In-Store's system); buttons are: Upload invoice (scrolls to/opens `InvoicesPanel`'s form), Email (`mailto:` placeholder), WhatsApp (`wa.me` placeholder, green) — both placeholders flagged the same way Lightspeed's URL was.
-
-**Files**: `wholesale/page.tsx` rewritten (was generic shell), `wholesale/{invoice-actions.ts}`, `src/components/portal/wholesale/{InvoicesPanel.tsx,QuickLinks.tsx}`, migration `2026101X_wholesale_invoices.sql`.
-
-## Phase 4 — @mentions and per-department notification badges
-
-**Roster lookup problem, resolved**: confirmed via research that `profiles` has no RLS policy letting anyone read another profile at the same business — not even executives (the old own-row policies were dropped in `20260919_harden_profiles_privilege_escalation.sql` and never replaced). Rather than add a new RLS policy (bigger security surface), reuse the existing escape hatch this codebase already uses for the same problem (`src/lib/activity-tracking.ts`, `src/lib/eod-reports.ts`): a server action that resolves `customer_id` server-side from the caller's own session, then queries with `createAdminClient()` — never trusting a client-supplied customer_id. New `getMentionRoster()` in a new `src/app/portal/(app)/mentions/actions.ts`.
-
-**Data model** (new migration): `page_comments` gets `mentioned_profile_ids uuid[] not null default '{}'`. New `profile_mentions` table (per-person notification record, same shape idiom as `portal_patch_reads`): `id, profile_id (fk profiles), customer_id, department, comment_id (fk page_comments), mentioned_by_name, read_at, created_at`; RLS: `profile_id in (select id from profiles where user_id = auth.uid())` (the person can read/update-as-read their own mentions) `or is_service_provider()`.
-
-**Comment box UI**: new `MentionTextarea.tsx` wraps the existing plain `<textarea>` in `PageComments.tsx` — tracks the word at the cursor, and when it starts with `@`, shows a dropdown (fetched once from `getMentionRoster()`, filtered client-side) below the textarea; picking a name replaces `@partial` with `@Full Name ` and records that person's `profile_id` in local state. On submit, `addPageComment` gains a `mentionedProfileIds: string[]` parameter — server re-validates each id actually belongs to the customer (via admin client) before storing, and inserts one `profile_mentions` row per validated id (also via admin client, since the mentioner's own RLS session can't write rows for someone else's `profile_id` — same reasoning as `portal_patch_reads`).
-
-**Sidebar badge**: new `unreadMentionsByDept: Record<string, number>` prop on `Sidebar` (alongside the existing `unreadPatches`, not replacing it), computed in `src/app/portal/(app)/layout.tsx` the same way `unreadPatches` already is (one more admin-scoped query, grouped in JS). Rendered as a numeric pill (`rounded-full bg-accent-blue px-1.5 text-[11px] font-medium text-white`, matching `MessagesPanel.tsx`'s existing unread-count style — not the pulsing dot used for patches) next to whichever department nav link has `unreadMentionsByDept[link.department] > 0`.
-
-**Marking read**: `DeptCommentBox.tsx` (already a per-department server component) additionally updates `profile_mentions` to `read_at = now()` for the signed-in profile + that department where still unread — legal under RLS since it's a person updating their own rows, no admin client needed there.
-
-**Files**: `src/components/portal/department/MentionTextarea.tsx` (or fold into `PageComments.tsx`), `src/app/portal/(app)/mentions/actions.ts`, changes to `PageComments.tsx`, `department/actions.ts`'s `addPageComment`, `Sidebar.tsx`, `layout.tsx`, `DeptCommentBox.tsx`, migration `2026101X_mentions.sql`.
-
-## Verification (all phases)
-
-- `npx tsc --noEmit` and `npx eslint` on every new/changed file after each phase (same as Phase 1), fixing anything that isn't pre-existing noise.
-- New branch off current `main` (`instore-daily-log` is already merged) — work happens as separate commits per phase on one branch, pushed and opened as a PR the same way as Phase 1, not committed/pushed until asked.
-- Three new migrations (Events, Wholesale, Mentions) handed to Willem the same manual-paste way as every prior one — not run automatically.
-- Manual browser check once deployed to preview: create an Events entry flagged "in-store" and confirm it shows on the In-Store countdown; create a Wholesale invoice, mark it sent then paid, confirm the follow-up deliverable appears and auto-completes, and confirm the calendar bar renders across the right days; @mention someone in a comment and confirm their Sidebar badge appears and clears when they open that department.
+- `npx tsc --noEmit` / `npx eslint` on every new/changed file, same as every prior phase.
+- New branch off current `main`, work as separate commits (foundation → In-Store sales → Warehouse → Events → KPI layout), pushed and merged the same way as the last two batches — confirm with Willem before merging, same as always.
+- New migrations (schema + seed) handed over the same manual-paste way, run before merge.
+- Manual browser check once deployed: add a product, log an In-Store sale against it and confirm `store_qty` drops and the calendar's primary-KPI number updates, open Wholesale's and Warehouse's Stock views and confirm the same product/quantities show up, create an event with a stock request, check the KPIs page's new column layout.
