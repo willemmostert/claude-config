@@ -1,0 +1,1 @@
+- [Sci-Core portal In-Store build](project_scicore_portal_instore_build.md) — Phase 1 done, pushed on branch `instore-daily-log`, not merged; migration not run; PR not opened
