@@ -1,1 +1,1 @@
-- [Sci-Core portal In-Store build](project_scicore_portal_instore_build.md) — Phase 1 done, pushed on branch `instore-daily-log`, not merged; migration not run; PR not opened
+- [Sci-Core portal In-Store build](project_scicore_portal_instore_build.md) — Phase 1 + KPI reorg + messaging cleanup merged to main and live; Lightspeed URL & real KPIs still pending; Supabase keys pasted in chat, rotation unconfirmed
