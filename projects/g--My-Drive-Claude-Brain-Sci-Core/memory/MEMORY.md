@@ -1,1 +1,1 @@
-- [Sci-Core portal In-Store build](project_scicore_portal_instore_build.md) — Phase 1 + KPI reorg + messaging cleanup merged to main and live; Lightspeed URL & real KPIs still pending; Supabase keys pasted in chat, rotation unconfirmed
+- [Sci-Core portal build](project_scicore_portal_instore_build.md) — In-Store, Events, Wholesale, @mentions all merged to main and live; not browser-tested; Lightspeed/email/WhatsApp URLs & real KPIs still pending; Supabase key rotation unconfirmed
