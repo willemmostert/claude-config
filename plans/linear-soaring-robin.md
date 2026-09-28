@@ -1,62 +1,54 @@
-# Sci-Core portal — shared Product/Stock system, In-Store sales logging, Events stock requests, KPI page layout
+# Sci-Core portal — flexible daily logging, leave visibility, Management daily overview, KPI pagination
 
 ## Context
 
-Willem wants the 42-product catalog we just scraped from sci-core.co.za turned into a real, shared inventory system inside the portal — not just a one-off reference page. It needs to live in Wholesale (as "the main wholesale database"), In-Store, and Warehouse, staying in sync across all three, plus: a new product-based daily sales flow for In-Store (replacing manual KPI number entry), structured stock requests on Events, and a vertical-column layout for the KPIs & Goals page. Confirmed with Willem: "the membership tab" meant Warehouse; In-Store's product-sales logging **replaces** its KPI number-entry (any KPI that should track it gets computed automatically); the 40% membership discount is one global rate, not per-product.
+Three rounds of feedback on the daily-log system built over the last two sessions converge on one real problem: logging was too rigid. It either required a pre-existing KPI to type a number into (blocking Wholesale/Warehouse/Events entirely until Willem sets KPIs up, and blocking even a plain note), or — for In-Store specifically — was replaced entirely by product-sales-only logging, losing the ability to log things like membership signups or cans handed out that aren't a product sale. Willem also wants leave-day marking surfaced on every department (not just buried on Profile) with visibility for Management, a new Management-wide daily overview calendar combining every department's day into one shaded view, and the KPI page's vertical columns capped with a "show more" since they've gotten long.
 
-## Data model (three new migrations)
+Confirmed with Willem: Rudi can type a brand-new ad hoc metric label himself on the spot (no need to wait for a KPI to be pre-created) — the daily-log entry system becomes genuinely free-form. The end-of-day report stays a single overall confirm (edit a quantity, submit) — no per-item "what does this count toward" picking; that's simpler and matches "don't want them to fill in a lot of work."
 
-**`products`** — the single shared catalog, one row per product, with a quantity per physical location so each department's stock view stays separate but always reads the same numbers:
+**Separately, still outstanding**: the products-seed migration silently inserted 0 rows (confirmed: `select count(*) from products` returned 0) — the `where slug ilike 'sci-core%' or name ilike 'sci-core%'` match found nothing. Still need Willem to run `select id, slug, name from public.customers;` and share the result before a corrected re-seed can be written — not part of this plan's file changes, handled separately once that comes back.
+
+## Free-form daily logging (In-Store, Wholesale, Warehouse)
+
+**New table `dept_day_metrics`** — ad hoc "label: number" entries, no KPI required at all:
 ```
-id, customer_id, name, info (text), image_url, shopify_handle, shopify_url,
-retail_price numeric, status text check in ('in_development','coming_soon','new','active','old_stock','discontinued') default 'active',
-new_until date (status='new' auto-reads as expired once past this date — computed in the UI, not enforced by a job),
-warehouse_qty int default 0, wholesale_qty int default 0, store_qty int default 0,
-low_stock_threshold int default 10,
-created_by, created_at, updated_at
+id, customer_id, department, log_date, label text, amount numeric,
+logged_by, logged_by_name, created_at, updated_at
+unique (customer_id, department, log_date, label)
 ```
-RLS: any of `can_access_department('warehouse'|'wholesale'|'sales')`, matching the "separate tabs, same data" requirement — there's no single owning department.
+RLS: `can_access_department(department)`, same shape as `dept_day_logs`. These are a record of what happened, not wired into `kpi_logs` — no per-item attribution step, matching the "one overall confirm" decision. If Willem wants a metric to show up in the official KPI/shading system, he still creates it as a real KPI the way he always could (unchanged).
 
-**`product_sales`** — In-Store's per-sale log (and reusable by Wholesale later if it ever needs the same pattern): `id, customer_id, product_id, department, sale_date, quantity, price_tier ('membership'|'retail'), unit_price (snapshot at sale time), total, logged_by, logged_by_name, created_at`. Same multi-department RLS shape as `dept_day_logs`.
+**`LogDayModal.tsx`** (used today by Wholesale and Warehouse) currently refuses to render *anything* — not even the notes field — when the department has zero KPIs (`kpis.length === 0` gates the entire per-date block). Rebuilt so every date section always shows, regardless of KPI count:
+- The existing per-KPI number inputs, if any KPIs exist (unchanged behavior when they do).
+- A new always-present "Add anything else" list: repeatable rows of free-typed label + number, add/remove, no KPI needed. Saved to `dept_day_metrics`.
+- The existing notes textarea, always present.
 
-**`store_settings`** — one row per business: `customer_id (pk), membership_discount_pct numeric default 40`. The single global discount rate, editable from the Stock view.
+**`SalesDayModal.tsx`** (In-Store) gains the same "Add anything else" section beneath its product-sales lines, so Rudi can log membership signups, cans handed out, etc. alongside actual product sales in the same popup. The primary-metric Rand figure still auto-computes from product sales exactly as built — ad hoc metrics don't feed it, they're just logged.
 
-**Events**: `alter table events add column stock_requests jsonb not null default '[]'` — an array of `{product_id, quantity, source: 'warehouse'|'wholesale'|'store'}`, same jsonb-array-for-a-variable-length-list pattern already used by `mk_calendar_rows.links`.
+**Custom one-off products** ("ice cream", "a slushy" at a special event): `product_sales.product_id` becomes nullable, gains `custom_name text`, with `check (product_id is not null or custom_name is not null)`. `SalesDayModal`'s product-sales row gets a "Custom item" toggle: instead of `ProductPicker`, a free-text name + typed price, still with the membership/retail choice applied to that typed price. `submitProductSales` skips the stock-decrement step for custom rows (nothing in the catalog to decrement) but still counts toward the day's Rand total.
 
-**Seed migration**: the 42 real products (name, price, image URL, availability → status) as plain `insert` statements generated from the scrape — real portal pages aren't sandboxed like the Artifact tool, so `image_url` just points straight at the existing Shopify CDN URLs (`cdn.shopify.com/...`), no re-hosting needed.
+**Shared day-actions** (`src/app/portal/(app)/daily-log/day-actions.ts`) gains `getDayMetrics(department)`/`submitDayMetrics(department, entries)` — mirroring `submitDayLogs`'s replace-the-day pattern (delete this day's rows for the department, re-insert). `getDeptDailyLogData` in `src/lib/dept-daily-log.ts` also returns the day's existing metrics so the modal can prefill them when reopening a logged day.
 
-## Shared Product/Stock UI
+**End-of-day report** (`DailyEodReportPanel`/`getDeptEodReportView`/`submitDeptEod`) reads back and displays the day's full picture for a one-tap confirm: the primary-metric figure (if any), the list of ad hoc metrics logged, and (for In-Store) the product-sales lines — editable inline, no per-item KPI picker, matching the original "are these numbers accurate?" design intent from the first build.
 
-One component, three mount points — same pattern as `DailyLogCalendar` being shared by In-Store/Wholesale:
+## Leave days on every department + Management visibility
 
-- `src/components/portal/products/ProductStockPanel.tsx` — takes `primaryLocation: "warehouse" | "wholesale" | "store"`. Shows every product as a card/row: photo, name, status badge (Coming Soon / New / Old Stock / In Development, "New" auto-hides once `new_until` passes), retail price, this location's quantity (editable, prominent) plus the other two locations' quantities (read-only, for the cross-department overview), a stock-health dot (out of stock / low / healthy, from `low_stock_threshold`). "+ Add product" and "Delete" (with confirm). A "Membership discount" field at the top (reads/writes `store_settings`, one global number).
-- `src/components/portal/products/ProductPicker.tsx` — a searchable dropdown showing each product's thumbnail + name (a native `<select>` can't show images). Reused by the In-Store sales modal and the Events stock-request rows.
-- `src/app/portal/(app)/products/actions.ts` — `getProducts()`, `addProduct()`, `updateProduct()` (name/info/price/status/new_until/the three quantities), `deleteProduct()`, `getDiscountRate()`, `setDiscountRate()`.
-- New routes, each a thin wrapper: `sales/stock/page.tsx`, `wholesale/stock/page.tsx`, `warehouse/stock/page.tsx` rendering `<ProductStockPanel primaryLocation="..." />`.
-- Quick-link buttons: Wholesale's `QuickLinks.tsx` gains a "Stock" button (next to Invoices/Email/WhatsApp) linking to `/portal/wholesale/stock`. In-Store's `QuickLinks.tsx` gains an "In-Store Stock" button (next to Lightspeed) linking to `/portal/sales/stock`. Both use the Sci-Core "S" logo if Willem finds one; a generic package icon otherwise (flagged the same way the other placeholder buttons were).
+- New compact `LeaveQuickLink` in `DeptShell.tsx`'s right column (visible on every department page, not just Profile): a small "Mark leave" control using the existing `addLeaveDay`/`getMyLeaveDays` actions from `src/app/portal/(app)/profile/leave-actions.ts` — no new leave-tracking logic, just a second, more visible entry point to what Phase 1 already built.
+- New `getTeamLeaveDays()` in `profile/leave-actions.ts`, executive-gated, using the admin client to read every profile's leave for the business — `profile_leave_days`' RLS only lets a person see their own rows, so this mirrors the same admin-client escape hatch already used for `activity-tracking.ts` and the @mention roster.
+- New small "Who's out" panel on Management's Departments tab (`src/components/portal/TeamOverview.tsx`'s `DepartmentsGrid`) listing anyone currently or soon on leave.
 
-## In-Store: product-sales logging replaces KPI entry
+## Management: combined daily overview calendar
 
-Reuses everything from the daily-log system except the modal:
-- New `src/components/portal/sales/SalesDayModal.tsx` — for the selected date(s): a list of line items (`ProductPicker` + quantity + a Membership 40% off / Full retail toggle — no manual price typing), add/remove rows, save.
-- New `src/app/portal/(app)/sales/sales-log-actions.ts`: `submitProductSales(dates, lineItems)` — inserts `product_sales` rows (unit price computed server-side from the product's `retail_price` and the current `store_settings` discount, never trusted from the client), decrements each sold product's `store_qty`, and — this is the "gets computed automatically" part — upserts `dept_day_logs` plus a `kpi_logs` row for whichever KPI is flagged `is_primary_metric` on In-Store, with the day's total Rand value, tagged with the existing `dailyLogNote("sales")`. This means the calendar shading/weekly/monthly totals from the last build keep working unchanged — they just get their number from real sales instead of a typed-in figure.
-- `DailyLogCalendar.tsx` gains an optional `renderModal?: (dates, onClose) => ReactNode` prop; when provided it's used instead of the default `LogDayModal`. In-Store's page passes `SalesDayModal`; Wholesale and Warehouse pass nothing and keep today's generic KPI-number modal.
+New tab on Management (`ManagementTabs.tsx` gains "Daily Overview", new route `src/app/portal/(app)/management/daily/page.tsx`):
+- Reuses `MonthCalendar` again (its third reuse, after Events and the daily-log departments) — month/week view, each day shaded by how many (department, metric) facts were logged that day across the whole business (EOD reports completed, primary-metric amounts, ad hoc metrics, product sales) — same `color-mix` shading formula, normalized per visible range.
+- Clicking a day opens a detail view: per department, its EOD status, primary-metric number, ad hoc metrics, notes, and (for In-Store) the day's product sales — pulled from `portal_eod_reports`, `dept_day_logs`, `kpi_logs`, `dept_day_metrics`, `product_sales`, read via the admin client (executive-only route, same pattern as everywhere else admin needs cross-department visibility).
 
-## Warehouse joins the daily-log system
+## KPIs & Goals: cap columns at 5, expand
 
-`DAILY_LOG_DEPARTMENTS` in `src/lib/dept-daily-log.ts` gains `"warehouse"` — since every daily-log function, the EOD report, and `DeptShell`'s panel logic already key off this one array, this alone gives Warehouse the click-a-day popup, weekend logging, and its own leave-aware end-of-day report, matching In-Store and Wholesale. `warehouse/page.tsx` and a new `warehouse/layout.tsx` go from the generic `DepartmentPage` shell to a bespoke page (mirroring `sales/page.tsx`): comment box, a "Stock Management" quick-link, `DailyLogCalendar`, deliverables.
-
-## Events: structured stock requests
-
-`EventModal.tsx`'s form gains a repeatable "Products needed" section: `ProductPicker` + quantity + a source select (Warehouse / Wholesale / In-Store), add/remove rows, stored as `stock_requests` on the event. Replaces the current free-text "stock needed" field (kept as a fallback note for anything not worth a structured line, e.g. "extra tables").
-
-## KPIs & Goals: vertical department columns
-
-`KpiManager.tsx`'s department sections currently stack full-width, top to bottom. Restructure the wrapping container to a horizontally-scrolling row of fixed-width columns (one per department — In-Store, Wholesale, Marketing, Events, Warehouse side by side), each column keeping its own existing internal layout (owner sub-groups, KPI cards) stacked vertically inside it. `DeliverablesOverview` below is left as it is — only the KPI section was asked for.
+`KpiManager.tsx`'s per-department column currently renders every KPI across every owner group, which has gotten long. Flatten each column's KPIs into one ordered list (owner grouping stays for display, just capped), show the first 5, with a "Show all (N)" toggle per column to reveal the rest — a small `useState` per section, no data changes needed.
 
 ## Verification
 
-- `npx tsc --noEmit` / `npx eslint` on every new/changed file, same as every prior phase.
-- New branch off current `main`, work as separate commits (foundation → In-Store sales → Warehouse → Events → KPI layout), pushed and merged the same way as the last two batches — confirm with Willem before merging, same as always.
-- New migrations (schema + seed) handed over the same manual-paste way, run before merge.
-- Manual browser check once deployed: add a product, log an In-Store sale against it and confirm `store_qty` drops and the calendar's primary-KPI number updates, open Wholesale's and Warehouse's Stock views and confirm the same product/quantities show up, create an event with a stock request, check the KPIs page's new column layout.
+- `npx tsc --noEmit` / `npx eslint` on every changed file, same as every prior phase.
+- New branch off current `main`, commits per sub-feature, pushed for Willem to run the two new migrations (`dept_day_metrics` table; `product_sales.product_id` nullable + `custom_name`) before merging — same manual process as always.
+- Manual check once deployed: log a day for Wholesale with zero KPIs defined and confirm it's no longer blocked; add an ad hoc "Cans handed out: 12" entry for In-Store; log a custom "Ice cream" sale; mark a leave day from the Wholesale page and confirm it shows on Management's "Who's out"; open Management's new Daily Overview calendar and click into a day; confirm the KPI page's "Show all" expand works.
