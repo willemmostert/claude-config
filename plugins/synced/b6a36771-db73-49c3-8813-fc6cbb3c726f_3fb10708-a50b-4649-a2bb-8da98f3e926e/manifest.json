@@ -94,10 +94,5 @@
       "installationPreference": "available",
       "generation": 2
     }
-  ],
-  "staleDirs": [
-    "cowork-plugin-management",
-    "adobe-for-creativity",
-    "figma"
   ]
 }
