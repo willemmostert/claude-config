@@ -1,5 +1,5 @@
 {
-  "lastUpdated": 1790548805745,
+  "lastUpdated": 1791117073143,
   "plugins": [
     {
       "pluginId": "plugin_019TBdWa5NQJJuDFmEc4k6BJ",
@@ -41,10 +41,11 @@
       "pluginId": "plugin_017FSfZwAM3GF7xTpsbDUHoA",
       "name": "adobe-for-creativity",
       "description": "Brings together Adobe Creative Cloud tools for images, vectors, design, and video. Edit multiple assets at once, adapt for different platforms, and complete multi-step creative workflows for polished results.",
-      "version": "0044",
-      "updatedAt": "2026-09-24T19:34:25.411298Z",
+      "version": "0045",
+      "updatedAt": "2026-10-01T21:59:58.342459Z",
       "marketplaceName": "knowledge-work-plugins",
-      "installationPreference": "available"
+      "installationPreference": "available",
+      "generation": 2
     },
     {
       "pluginId": "plugin_01Eeb9y5m4iFuY3yRtytYfdc",
@@ -68,10 +69,11 @@
       "pluginId": "plugin_0155zZVATbJU3jHUmPP9NvMC",
       "name": "cowork-plugin-management",
       "description": "Create, customize, and manage plugins tailored to your organization's tools and workflows. Configure MCP servers, adjust plugin behavior, and adapt templates to match how your team works.",
-      "version": "0039",
-      "updatedAt": "2026-09-22T20:19:52.672917Z",
+      "version": "0040",
+      "updatedAt": "2026-10-01T21:59:56.801289Z",
       "marketplaceName": "knowledge-work-plugins",
-      "installationPreference": "available"
+      "installationPreference": "available",
+      "generation": 2
     },
     {
       "pluginId": "plugin_01AYHYqVLaZRH2Vi6aHgDwEw",
@@ -86,10 +88,16 @@
       "pluginId": "plugin_01VUWKAs3gYLNqeKbDtxv1Xs",
       "name": "figma",
       "description": "Figma design platform integration. Access design files, extract component information, read design tokens, and translate designs into code. Bridge the gap between design and development workflows.",
-      "version": "0055",
-      "updatedAt": "2026-09-22T20:19:48.799576Z",
+      "version": "0056",
+      "updatedAt": "2026-10-01T21:59:59.159818Z",
       "marketplaceName": "knowledge-work-plugins",
-      "installationPreference": "available"
+      "installationPreference": "available",
+      "generation": 2
     }
+  ],
+  "staleDirs": [
+    "cowork-plugin-management",
+    "adobe-for-creativity",
+    "figma"
   ]
 }
