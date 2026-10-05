@@ -18,3 +18,5 @@ Follow-on to [[project-scicore-portal-instore-build]] (same repo, `C:\Users\info
 
 **Why:** Willem wants Campaigns/Athlete/Ambassadors closed to everyone but named people.
 **How to apply:** Before adding departments or touching mentions, re-read `access.ts` and `department/actions.ts`; verify deploy state rather than trusting this.
+
+**Update 2026-10-05:** Campaigns is now a real workspace (pipeline, 5-step builder, content matrix, talent, budget), commit `00c11bc`, migration `20261025_campaigns.sql` run by Willem. Access should be only Willem (info@ service_provider) and Elizma (`campaigns` in departments) — but every `service_provider` (GotWurk staff) profile also gets in by design; not yet locked tighter. Campaigns must stay separate from Marketing: [[feedback-campaigns-separate-from-marketing]].

@@ -1,2 +1,3 @@
 - [Sci-Core portal build](project_scicore_portal_instore_build.md) — full dept build-out + shared Product/Stock system merged to main and live; not browser-tested; placeholder URLs/logo & real stock qty still pending; Supabase key rotation unconfirmed
 - [Portal: restricted depts & mention emails](project_scicore_portal_restricted_depts_mentions.md) — Campaigns/Athlete Mgmt/Ambassadors access model, Willem's two profiles, Resend mention emails (delivery unconfirmed)
+- [Campaigns stay separate from Marketing](feedback_campaigns_separate_from_marketing.md) — never push Campaigns content/notifications into Marketing; Marketing = Members Club only
