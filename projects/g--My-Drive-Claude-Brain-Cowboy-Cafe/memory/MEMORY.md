@@ -1,0 +1,2 @@
+- [Pitch deck hands off](feedback-pitch-deck-hands-off.md) - never edit or regenerate the existing pitch deck
+- [Rejected renders erased](feedback-rejected-renders-erased.md) - rejected renders deleted; only use renders Willem approves
