@@ -1,0 +1,250 @@
+<ide_diagnostics>[
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 51,
+    "column": 1,
+    "message": "MD032/blanks-around-lists: Lists should be surrounded by blank lines",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 71,
+    "column": 1,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 71,
+    "column": 5,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 71,
+    "column": 5,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 71,
+    "column": 9,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 71,
+    "column": 9,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 71,
+    "column": 13,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 82,
+    "column": 1,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 82,
+    "column": 5,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 82,
+    "column": 5,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 82,
+    "column": 9,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 82,
+    "column": 9,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 82,
+    "column": 13,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 97,
+    "column": 1,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 97,
+    "column": 5,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 97,
+    "column": 5,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 97,
+    "column": 9,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 97,
+    "column": 9,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 97,
+    "column": 13,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 97,
+    "column": 13,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 97,
+    "column": 17,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 97,
+    "column": 17,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 97,
+    "column": 21,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 97,
+    "column": 21,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 97,
+    "column": 25,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 111,
+    "column": 1,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 111,
+    "column": 5,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 111,
+    "column": 5,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the right for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 111,
+    "column": 9,
+    "message": "MD060/table-column-style: Table column style [Table pipe is missing space to the left for style \"compact\"]",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 140,
+    "column": 60,
+    "message": "MD034/no-bare-urls: Bare URL used",
+    "code": "[object Object]",
+    "severity": "Warning"
+  },
+  {
+    "filePath": "/g:/My Drive/Claude Brain/Catalyst Coaching/Catalyst Main HUB/01 Clients/Matar Suliman/Game Plan — 2026-10-06.md",
+    "line": 141,
+    "column": 1,
+    "message": "MD032/blanks-around-lists: Lists should be surrounded by blank lines",
+    "code": "[object Object]",
+    "severity": "Warning"
+  }
+]</ide_diagnostics>
