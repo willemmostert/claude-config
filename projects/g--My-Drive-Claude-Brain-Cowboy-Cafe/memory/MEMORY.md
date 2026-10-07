@@ -1,4 +1,5 @@
 - [Pitch deck hands off](feedback-pitch-deck-hands-off.md) - never edit or regenerate the existing pitch deck
 - [E-commerce and brand direction](project-ecommerce-and-brand-direction.md) - online leather/hat shop, brutalist grey site, no outside logos, no pink or cowboy cliches
 - [Brand identity fixed](project-brand-identity-fixed.md) - final logo lockups and wordmark font set 2026-10-07; never redraw or retype
+- [Cedar coffee partner](project-cedar-coffee-partner.md) - Cedar Coffee Roasters as supplier and trainer, terms not agreed
 - [Rejected renders erased](feedback-rejected-renders-erased.md) - rejected renders deleted; only use renders Willem approves
